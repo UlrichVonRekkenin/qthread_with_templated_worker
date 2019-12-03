@@ -34,27 +34,27 @@ namespace impl {
 
       template<typename OnThreadStartSlot, typename ...Args>
       explicit ThreadedWorker(OnThreadStartSlot slot, Args...args) :
-        worker(new Worker(std::forward<Args>(args)...)), thread(new QThread)
+        worker(new Worker(std::forward<Args>(args)...))
       {
         static_assert(std::is_base_of<QObject, Worker>::value, "Template parameter `Worker` must be derived from QOject.");
-        QObject::connect(thread, &QThread::started, worker, slot);
-        QObject::connect(thread, &QThread::finished, worker, &QObject::deleteLater);
-        worker->moveToThread(thread);
+        QObject::connect(&thread, &QThread::started, worker, slot);
+        QObject::connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
+        worker->moveToThread(&thread);
       }
 
       ~ThreadedWorker()
       {
-        thread->quit();
-        thread->wait();
+        thread.quit();
+        thread.wait();
       }
 
       void start(QThread::Priority priority = QThread::HighPriority)
       {
-        thread->start(priority);
+        thread.start(priority);
       }
 
     private:
-      QThread* thread = nullptr;
+      QThread thread;
   };
 
 }
