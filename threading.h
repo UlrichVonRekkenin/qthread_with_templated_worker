@@ -36,7 +36,12 @@ namespace impl {
       explicit ThreadedWorker(OnThreadStartSlot slot, Args...args) :
         worker(new Worker(std::forward<Args>(args)...))
       {
-        static_assert(std::is_base_of<QObject, Worker>::value, "Template parameter `Worker` must be derived from QOject.");
+        static_assert(std::is_base_of<QObject, Worker>::value,
+                      "Template parameter `Worker` must be derived from QOject.");
+
+        static_assert (std::is_member_function_pointer<OnThreadStartSlot>::value,
+                       "Template parameter `OnThreadStartSlot` must be a pointer to member function.");
+
         QObject::connect(&thread, &QThread::started, worker, slot);
         QObject::connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
         worker->moveToThread(&thread);
